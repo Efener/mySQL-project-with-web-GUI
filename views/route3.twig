@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <link href="style1.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+    <div class="sidebar">
+      <div class="logo">
+        <a href="#">
+          Efener
+        </a>
+      </div>
+
+      <div class="navigation">
+        <ul>
+          <li>
+            <a href="#" onclick="comehome()">
+              <span class="fa fa-home"></span>
+              <span>Home</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="#" onclick="comesearch()">
+              <span class="fa fa-search"></span>
+              <span>Search</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="navigation">
+        <ul>
+            <li>
+                <a href="#" onclick="comeAddSong()">
+                  <span class="fa fas fa-plus-square"></span>
+                  <span>Add Song</span>
+                </a>
+              </li>
+
+        </ul>
+      </div>
+    </div>
+
+    <div class="main-container">
+      <div class="topbar">
+      </div>
+      <div class="musicList" id="songNames">
+
+
+      </div>
+
+      <div class="searchbar">
+        <h1>Music Search</h1>
+        <form id="searchForm">
+            <input type="text" id="artistInput" placeholder="Search by artist">
+            <input type="text" id="albumInput" placeholder="Search by album">
+            <input type="text" id="songInput" placeholder="Search by song">
+            <button type="button" onclick="search()">Search</button>
+            <label for="sortOrder">Sort by:</label>
+            <select id="sortOrder" onchange="search()">
+                <option value="alphabetical">Alphabetical</option>
+                <option value="duration">Duration</option>
+                <option value="artist">Artist</option>
+            </select>
+        </form>
+        <div id="searchResults"></div>
+    </div>
+
+
+       <div id="addSongModal" style="display: none;">
+        <h2>Add Song</h2>
+        <form id="addSongForm">
+            <label for="songTitle">Song Title:</label>
+            <input type="text" id="songTitle" name="songTitle" required>
+    
+            <label for="artist">Artist:</label>
+            <input type="text" id="artistsearch" name="artistsearch" required>
+    
+            <label for="albumName">Album Name:</label>
+            <input type="text" id="albumName" name="albumName" required>
+    
+            <label for="genre">Genre:</label>
+            <input type="text" id="genresearch" name="genresearch" required>
+    
+            <label for="duration">Duration (in seconds):</label>
+            <input type="number" id="duration" name="duration" required>
+    
+            <label for="releaseDate">Release Date:</label>
+            <input type="date" id="releaseDate" name="releaseDate" required>
+    
+            <button type="submit" onclick="addSong()">Add Song</button>
+        </form>
+    </div>
+    
+    
+
+
+
+
+
+
+
+
+
+    <div class="homepage">
+      <div class="spotify-playlists">
+        <h2>Lists by Genre</h2>
+
+        <div class="list" id="genre">
+      
+
+
+          </div>
+      </div>
+
+      <div class="spotify-playlists">
+        <h2>Lists By Artists</h2>
+        <div class="list" id="artist">
+            
+  
+            
+  
+           
+          
+          </div>
+      </div>
+
+      <div class="spotify-playlists">
+        <h2>All Songs</h2>
+        <div class="list" id="song">
+          
+          </div>
+        <hr>
+      </div>
+    </div>
+    </div>
+    
+
+    <script src="https://kit.fontawesome.com/23cecef777.js" crossorigin="anonymous"></script>
+   <script>
+    document.addEventListener('DOMContentLoaded', function () {
+    getLists('genres');
+    getLists('artists');
+    getLists('songs') });
+
+   function SendReq(genre) {
+            fetch('/getSongs', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ genre }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.songs); 
+                document.getElementsByClassName("homepage")[0].style.display = "none";
+                document.getElementsByClassName("musicList")[0].style.display ="block";
+                let songNamesDiv = document.getElementById('songNames');
+                songNamesDiv.innerHTML = '<h3>'+genre+' Songs</h3>';
+                data.songs.forEach(song =>{
+                  songNamesDiv.innerHTML+= '<p class= "musiclistitem">'+song+'</p>';
+                });
+
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+   
+        function sendReq2(artist) {
+            fetch('/getSongs', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ artist }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.songs);
+                document.getElementsByClassName("homepage")[0].style.display = "none";
+                document.getElementsByClassName("musicList")[0].style.display ="block";
+                let songNamesDiv = document.getElementById('songNames');
+                songNamesDiv.innerHTML = '<h3>Songs By: '+artist+'</h3>';
+                data.songs.forEach(song =>{
+                  songNamesDiv.innerHTML+= '<p class= "musiclistitem">'+song+'</p>';
+                });
+
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+
+        function comehome()
+        {
+          document.getElementsByClassName("homepage")[0].style.display = "block";
+          document.getElementsByClassName("musicList")[0].style.display ="none";
+          document.getElementsByClassName("searchbar")[0].style.display = "none";
+          document.getElementById("addSongModal").style.display = "none";
+          document.getElementById("searchResults").innerHTML = "";
+        }
+
+        function comesearch()
+        {
+          document.getElementsByClassName("homepage")[0].style.display = "none";
+          document.getElementsByClassName("musicList")[0].style.display ="none";
+          document.getElementsByClassName("searchbar")[0].style.display = "block";
+          document.getElementById("addSongModal").style.display = "none";
+        }
+
+
+        function comeAddSong()
+        {
+          document.getElementsByClassName("homepage")[0].style.display = "none";
+          document.getElementsByClassName("musicList")[0].style.display ="none";
+          document.getElementsByClassName("searchbar")[0].style.display = "none";
+          document.getElementById("addSongModal").style.display = "block";
+          document.getElementById("searchResults").innerHTML = "";
+        }
+
+        
+        function getLists(type) {
+    fetch(`/getLists?type=${type}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log(data[type]); 
+            switch (type) {
+                case 'genres': 
+                    let genrelist = document.getElementById("genre");
+                    data[type].forEach(element => {
+                        genrelist.innerHTML += `
+                            <div class="item" onclick="SendReq('${element}')">
+                                <img src="data:image/png;base64,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" />
+                                <div class="play">
+                                    <span class="fa fa-play"></span>
+                                </div>
+                                <h4>${element}</h4>
+                                <p>${element}</p>
+                            </div>
+                        `;
+                    });
+                    break;
+                case 'artists':
+                  let artistlist = document.getElementById("artist");
+                  data[type].forEach(element => {
+                        artistlist.innerHTML += `
+                            <div class="item" onclick="sendReq2('${element}')">
+                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAnFBMVEUSEhIe12Ae3GISAA4RAAsSEBEf3mMRAAgSDhESAA8SCRAf32Me1F8SBg8SCxARAAYct1MdwFcdylsez10dxVkWZDEam0gYeDkZiEAYgT0SFhQXcjcbrU8UOCAcslEZjUIVRSUUNx8WXS4TIxgbpkwal0YVTSgTKhsXdDcYfjwWYDAboUoVSicTKxsUPSIUMh4VVCoTHhcXajMTIBjqnecaAAAMjUlEQVR4nO2dZ3fiOhCGYxU3bFwB0wkdTHG8//+/XcmETUEugGSz9+j5crP3JFgvozIajcZvbxKJRCKRSCQSiUQikUgkEolEIpFIJBKJRNIA+ErTDeEN1tsIIqQhCE3btg1IfiQ/2/r/QqlO5by9J2lvNXJdL8N13Tgazg8LSES3/2GZuA2RM0j6sedbAKgAAOUT8iP5txKEk2l6Jt+ArTfd1gfANoLHtBtSZUouVKg16s8wgv+WSGwiYxa51E4VAKoaxPvFPyRSh9os8pQi2zFUBsvOGzL/gUGJTc3eEnl3qPvbY4PVyXl1Q2KExl1FvV/ep8iW1zHRK2uEaL18xHzfNKphb/CyGk1tPXlO30Wk32+jVxyPbXQeVZs7S1GDFMFX04jRonvX5FlMK5wjs2lNP7BhL3h4fmEClucX6qoYjT2++qhEq++8ihltuOPYQb9Q3eNLmBGjk8vdgBeA0nsBBwBrqSXCgJ8alyZsWKAJV+L0UYnhqdmeCjeieuhfiUrapEQ084Va8KJx2pgXh1EicAh+kxjDdkMC0xrkUdTJwG5CoNOvw4AZwNvUL5EIbNUlkE6pg7r9GyJQ8CT6S6JXc0fFqE4LZhLDRa1WRGltY/CvRLdd46KBkrr1EdRRfUs/PFgNKFTACtUk0NzU4MkwJe7qsSJGbjMCCUkdOw2srWpdJ34Q1DGhok5jFqQTqvgtsX1qZJb5K3Eqeihi2NwgvCB6KGq75gbhhdAQ2k/tccMWJP206wgUiKHXuEKlJbKfol7TfZQSiptP24ugaXUU0BfmvaHuK5hQUayjoLiNeb5vEIIrKuH6Mw+FwlxwZ1SlfZmklmoFoTtaxqtpFPV3hCiarrrxaOL5gdJqqc+JBSchzhtMSvpo1mqfpjsl7x82ygPqf07z4TR2Q+tRnWCkCRCI0SS/NcRsSuiutskiS1kzTD0vP4/8b103YZbmNlgPo5EXPKATzAREbdA6X501mXZObzQb755kPKzbEGnGZj3supZ61wk5WPI3IkZLVhPIt+9G6w+IoPlgpmGmE37M+iPrHlPyH4nmmPldukPsoOfTKIlMpNFMqqoqBUynWpfxaKujcfQvsI2cTRr7lfqrteG8Juo26ylr7ps1HWqDZOW3SkVyd2zg8HapADshC69OVpRkaZVZ0te4frvM6JO4nRo2NH3rFudXtdZcFwzzxOgnU5HhSx2i2aroeBLEXBcMFN0+S+2IjSeQiWcRFeQhBTxzp7Hh3T5BXQsPQevI2OZGnwHPb9iesZ4wrPIEjJ+6ZIGR3QvZdgRdjt8wihgPAd2cgUA8z7adeZ6E7z735Z/ZRYvqenWE++zx6H9w66Y5IURr8XvRxcSnphrMzaGzm67ikeuFvm9RAt/33MkoXkXb/WFjZ79mtys5QzraxEyPMTF4KWwfmd8hiL8v+Ji02ljMOtHS9QHZAaqMDe/nfrjVAr67nA7X5wH9OspVtp01Iw7N0XODnZyRsHM++4mJNPuQdslOSK26FSK/1yI7rqgzg055vixKGJ/qckuzRSyfNGtld0BahzSH7Ax85ZEMYbqx9CfR3Cjx37HGyi5b8BqITpjbQGXZH+7i4LkADO273nStF12CYsX51Dmn9UIfFN7rqXgzplRmyxqlR5Sb/qTdhhi4eVWlARpeAGCNthuNPbrQbTcFE06OG6ov+SkTuUeI0VvR9LYVAaf9hcZcjcSJVK3V8XZ21RixTMBnqsGI4ZQKFmktE/hToz7wGb/HZ83X3xifLVwjmOx/2BHtGB0J9LhMpu33x861AYO7/txba/ZVIzyzGsFpMmW6E4VNyy7Aeu5yNe33eumQkG57/WgVT7wwuFyYrfRJrdHsciOxjY7MTRSn2DesnsNG2h54y2mazBbEj7tsJK5cNhfG4H2973UnNGxY/rFA6Z7oBmXRD9i/7HEJhVU8FiXetrdKZwvjGtVnfth1Y6UfD9s4bJVaEyjeMnZzoxmhwUVh+X0DGvmerm1UOfKNcZtuoNrJ1C2NARcZO+CyRWQtRD+b4Hf3bw6xy73fJ9YN5MAk8kpDh3lY7zziwqVpbEP0TORbJ7Y8d0YPijxwCCmSDX7xQ9ZPX4egpQn+dEYPuPBgzmHJx7DQpVGHXJYkrEPHHpYEgRlP33NY8rFdqDAccAsH6VA7TXOWhTyFPCKKxQrBkmfQFJtoMfTu6Kx1KOQZtKToEM7dyu5dHQrjHIWfQdNvGHauH/DzL6F2mFTUyEchK6L/hWffNLqdeWjGn/Eh6aTDba/X2xHPtJMcxsTh0Sq4BTizY30Ki1cLMP8yYhYQdtB53++OvCCwMif8M1+I+meWFYSTbpTODK2k9A7RmPoVnEU+c2nJih9sLts4nThtb6de7IHCdKBLSNifrDpHE8H84yMMUb987QAJj0NErVgh8Ne0AJTWPuxGfqvqPEiNGo56h4EG85IqsDYuz/Wc8UjJQKVhmsku3cb+/S4Jsac/2r47eWVp4KBMYrDhsRqzTkd/tVR9PGZKk6miscaKrhGJeVlKV3zMQyErSYEvAHi7M6uIUmkQLORycgHnNQQTgTJJ39DNVqhkbwpcLlEM+yBeIG2t6k832q8RyQoDf/8bPh6VXlvuM7C6Z/TDgygJRoOIj89o5B49cQeAePatMI2Oi0O1asrn8Ilx6iMOoMRfhWmYYeDvv8wpQ7FkMPAGWFE2r2JdK73JySXURgOmdy8XnxFuKwj8MKTFIMPQ94mjqlSKfIOgQ5PbPkosSNx+Ttdn2u/VbZgdmPrepNsf7pPTZkBjhg6BOHbG2+J9vR9GSzdUWiUyVX/UnZRu97ltTjGqdHBBU/Qtd9mfZ1FhmjZj6mSb9NmPsvzuLBqsEQd93h95xXnPlULiW15ZUaURU+q3KWS7cCY7ggrbvyzrxljMV95zJ+RgzCsVGpXVTwDu9qQ5ZMt3R1AY67S6aUo89odF+tyqu9qzYoUgcqrk/TDQoWbO4+AxS4IltxRlHRd6NWD1zHE6MeWf/Qg84N3zG4ZlW0Tr/ORwIJZcRPff8bfe+d1IyEv7uuBx2MLoyBh6941I4HLMoy92vnMUkuXBtK9no9l/C6OJRGPnrrJafBPp2RdmPgl+ZmHi7FqTpiH7z2ndoefbhF5v2ElOC7somkiDiPdUJ+S2VlBgUZkBsNO+tCFkLsbz3Yre2GrRa3iXNExVzbIulcCLo85pAdlhNgy1bdUKk2T3y/M6gq4XzqZzx9ZpHHgw60yJtCxAmtsyWvrZjYczXWPksGH0Nq2mUOU4k1JyEzAvrGaDczp1aQZmxexSVfGXvbNzG4HSqxaB43folWGeCqsmUV13Z2DSnMtoc5uNCKsk8HC/n4cdMTfxVdXtHX9nIzKzZX8r5H4rv3hJfAKgWnHyM1EPzkufBfhlQF/RTXHRGgDcxPnW4goJrYBThOY7qCcwlgFUb/+VjFghR4lPKPgnzPRHjrS8ObwcJOnFuREUdSviRlLpLvFJABiNtTbGtlYe+QqElPsuWfV5aLSmC4RO5YUNWj0xl8rQUHglQQCCoPyGLKeUxFswqi/4XQjgcbbNpJZTqHLARFg1rJyqA7VzElfo02RmW9eMuhJR9uOK6BWjCr7QYl/YabpcmwLWYi9Ym8eGBapTkX2UItQ9LQd4nDe+t2DY6HxqzcTX9yTbqOYkqmkdZWgho4JEXQK7Ti1FaBsoBH2htnLQuOaD/b8C/WNdVcsxiptY+K1Tfe8r0YsqmwkjqavYNaVdmhfJHVDLNPqFval5zQDDul/GYtdrRbCtZ534jjmo0YpgKLK0bh72QvR7gr5o6H1BZrtSuc+nAVbS1AuR9ArXSzkI9E/1zqI/Je6EC1TdY5MvJsMoue863f0Cu+0m3oT0TSJciHRvgJI6jb89z4QVD94fQPVmr/AGRB3NBa2MYPrW9LsBL2BodAWcaKj+Wmu8h17RnYS3GYGyMl7DgJ9AmFMY71GBk9PrGPCCjo4rbu9bbXl71OwawaSNTlWv7xaj+j34cq90vmA6sydfPE7PSMOt8QpLRA62diosHFuuz03hC+ujmGjTDyscVDPlgZsCWC9JG6E1rTN4rzzF7ek51eheDmwjc3/PNQMALHc35ln9XDw6RB/Jyq2QjUmvOy+3Y5R33fmF0Q0EF/PpJMi5zXWpKel1t+N2pTKtLwm9F6Npi6Q3HdE6ZkpWX4FmECuBH7rdfnoyHKruH5V3BesGvc5lfLwf5vsOZZ/MNhhq1Srs/jNktU6MzzInl1ttEolEIpFIJBKJRCKRSCQSiUQikUgkEolEIuHMfxoS4nK/OpVUAAAAAElFTkSuQmCC" />
+                                <div class="play">
+                                    <span class="fa fa-play"></span>
+                                </div>
+                                <h4>${element}</h4>
+                                <p>${element}</p>
+                            </div>
+                        `;
+                    });
+                    break;
+                    case 'songs':
+                  let songlist = document.getElementById("song");
+                  data[type].forEach(element => {
+                        songlist.innerHTML += `
+                            <div class="item" onclick="SendReq('${element.song_title}')">
+                                <img src="data:image/png;base64,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" />
+                                <div class="play">
+                                    <span class="fa fa-play"></span>
+                                </div>
+                                <h4>${element.song_title}</h4>
+                                <p>${element.artist_name}</p>
+                            </div>
+                        `;
+                    });
+                    break;
+
+        }
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+function addSong() {
+        
+        let songTitle = document.getElementById('songTitle').value;
+        let artistName = document.getElementById('artistsearch').value;
+        let genre = document.getElementById('genresearch').value;
+        let duration = document.getElementById('duration').value;
+        let releaseDate = document.getElementById('releaseDate').value;
+        let albumName = document.getElementById('albumName').value;
+
+       
+        fetch('/addSong', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                songTitle: songTitle,
+                artistName: artistName,
+                genre: genre,
+                duration:duration,
+                releaseDate:releaseDate,
+                albumName:albumName
+            }),
+        })
+        .then(response => response.text())
+        .then(data => {
+            console.log(data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+
+
+
+
+    function search() {
+        const artistInput = document.getElementById("artistInput").value;
+        const albumInput = document.getElementById("albumInput").value;
+        const songInput = document.getElementById("songInput").value;
+        const sortOrder = document.getElementById("sortOrder").value;
+
+        fetch(`/search?artist=${artistInput}&album=${albumInput}&song=${songInput}`)
+            .then(response => response.json())
+            .then(data => {
+                const searchResultsDiv = document.getElementById("searchResults");
+
+                if (data.results.length > 0) {
+                   
+                    const sortedResults = sortResults(data.results, sortOrder);
+
+                    const resultList = document.createElement("ul");
+
+                    sortedResults.forEach(result => {
+                        const listItem = document.createElement("li");
+                        listItem.innerHTML = `${result.artist} - ${result.album} - ${result.song}<button onclick="deleteSong('${result.song}')">X</button>`;
+                        resultList.appendChild(listItem);
+                    });
+
+                    searchResultsDiv.innerHTML = "";
+                    searchResultsDiv.appendChild(resultList);
+                } else {
+                    searchResultsDiv.innerHTML = "Bu şarkı sistemimizde bulunmamaktadır.";
+                }
+            })
+            .catch(error => console.error("Fetch error:", error));
+    }
+
+    function sortResults(results, sortOrder) {
+        return results.sort((a, b) => {
+            if (sortOrder === "alphabetical") {
+                return a.song.localeCompare(b.song);
+            } else if (sortOrder === "duration") {
+                return a.duration - b.duration;
+            } else if (sortOrder === "artist") {
+                return a.artist.localeCompare(b.artist);
+            }
+        });
+    }
+   
+    function deleteSong(songName) {
+        fetch(`/delete-song?name=${songName}`, { method: 'DELETE' })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Song deleted:', data);
+                search();
+            })
+            .catch(error => console.error("Delete error:", error));
+    }
+
+
+
+
+
+
+        
+   </script>
+
+  </body>
+</html>
